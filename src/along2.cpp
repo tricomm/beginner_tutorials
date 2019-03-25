@@ -24,10 +24,11 @@ void getMsgFromlist(std::vector<geometry_msgs::Pose>::iterator point,geometry_ms
 
 const double PI=3.14159265359;
 const double ZERO = 0.2;
-const double interval = 0.25;//步长 两步之内是障碍物
+const double interval = 1;//步长 两步之内是障碍物
 const double TIME_OUT = 3;
+const double obstac_dis = 1.2;
 const int obstac_min = 20;
-double FX = 0;//pro为1 2.5为0
+double FX = 0;//pro为0 2.5为2
 std::vector<geometry_msgs::Pose>::iterator itera_posts;//当前出发点T
 std::vector<geometry_msgs::Pose>::iterator itera_globle_posts;//当前出发点T
 std::vector <geometry_msgs::Pose> posts; //从文件中读到
@@ -175,18 +176,24 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   double theta2 = theta1-yaw;//目标在雷达坐标中的角度  //yaw:雷达相对世界坐标的朝向差
   if(theta2>PI)theta2-=2*PI;
   else if(theta2<-PI)theta2+=2*PI;
-  std::cout<<"yaw:"<<yaw<<" theta1"<<theta1<<" theta2:"<<theta2<<std::endl;
-  theta2 = theta2/PI*180;
-  int Pranges=180-theta2-30-FX*90;//自身与目标连线正负30度 雷达数据开始的数组下表
+  //std::cout<<"yaw:"<<yaw<<" theta1"<<theta1<<" theta2:"<<theta2<<std::endl;
+  theta2 = theta2/PI*180.0;
+  std::cout<<" theta2:"<<theta2<<std::endl;
+
+  int Pranges;//自身与目标连线正负30度 雷达数据开始的数组下表
+  if(theta2<0)Pranges = -theta2;
+  else Pranges = 360 - theta2;
+  Pranges = Pranges - 20 + 360 + FX*90;
   int obstac_num=0;
   std::cout<<"Ptemp:"<<Pranges<<std::endl;
-  for(int i=0;i<60;++i)
+  
+  for(int i=0;i<40;++i)
   {
     int Ptemp = (Pranges+i)%360;
-    if(scan->ranges[Ptemp]<2*interval)//当前与目标距离
+    if(scan->ranges[Ptemp]<obstac_dis)//当前与目标距离
       {
         obstac_num++;
-        std::cout<<scan->ranges[Ptemp];
+    //    std::cout<<scan->ranges[Ptemp]<<" ";
       }
   }
   if(obstac_num>obstac_min)
@@ -250,11 +257,11 @@ void postCallback( const geometry_msgs::PoseStamped::ConstPtr& posestamped )
     now_pose = *posestamped;
     no_move_time = ros::Time::now();
   }
-  else if((ros::Time::now().toSec() - no_move_time.toSec()) > 5.0)
+  else if((ros::Time::now().toSec() - no_move_time.toSec()) > 20.0)
   {
     chatter_pub->publish(action_goal);
     no_move_time = ros::Time::now();
-    std::cout<<"三秒以上未移动当前位置"<<now_pose.pose.position.x<<" "<<now_pose.pose.position.y
+    std::cout<<"20s以上未移动当前位置"<<now_pose.pose.position.x<<" "<<now_pose.pose.position.y
             <<"重发"<<action_goal.pose.position.x<<" "<<action_goal.pose.position.y
             <<"距离:"<<point2PointDistance(now_pose.pose,action_goal.pose)
             <<"角度:"<<point2PointYaw(now_pose.pose,action_goal.pose)
