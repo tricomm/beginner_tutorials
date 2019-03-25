@@ -204,18 +204,7 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ##构建名为talker123的可执行文件,它由src/talker123.cpp源文件构成
-add_executable(talker123 src/talker123.cpp)
 
-target_link_libraries(talker123 ${catkin_LIBRARIES})
-add_dependencies(talker123 beginner_tutorials_generate_messages_cpp)
-
-add_executable(listener src/listener.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
-add_dependencies(listener beginner_tutorials_generate_messages_cpp)
-
-add_executable(along1 src/along1.cpp)
-target_link_libraries(along1 ${catkin_LIBRARIES})
-add_dependencies(along1 beginner_tutorials_generate_messages_cpp)
 
 add_executable(along2 src/along2.cpp)
 target_link_libraries(along2 ${catkin_LIBRARIES})
@@ -225,16 +214,4 @@ add_executable(alongpro src/alongpro_tf_listener.cpp)
 target_link_libraries(alongpro ${catkin_LIBRARIES})
 
 
-#创建可执行程序
-add_executable(add_two_ints_server src/add_two_ints_server.cpp)
-#链接
-target_link_libraries(add_two_ints_server ${catkin_LIBRARIES})
-#添加依赖
-add_dependencies(add_two_ints_server beginner_tutorials_gencpp)
 
-add_executable(add_two_ints_client src/add_two_ints_client.cpp)
-target_link_libraries(add_two_ints_client ${catkin_LIBRARIES})
-add_dependencies(add_two_ints_client beginner_tutorials_gencpp)
-
-add_executable(basic_shapes src/basic_shapes.cpp)
-target_link_libraries(basic_shapes ${catkin_LIBRARIES})
