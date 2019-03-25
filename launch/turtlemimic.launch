@@ -1,0 +1,19 @@
+<!-- launch标签表明这个是一个launch文件 -->
+<launch>
+    <!-- 创建节点分组以ns(namespace)区分-->
+    <!-- 可让两个相同的包节点不起冲突 -->
+    <group ns="turtlesim1">
+        <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+    </group>
+
+    <group ns="turtlesim2">
+        <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+    </group>
+
+    <!--模仿节点 使2模仿1--> 
+    <node pkg="turtlesim" name="mimic" type="mimic">
+        <remap from="input" to="turtlesim1/turtle1"/>
+        <remap from="output" to="turtlesim2/turtle1"/>
+    </node>
+
+</launch>
