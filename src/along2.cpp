@@ -24,7 +24,7 @@ void getMsgFromlist(std::vector<geometry_msgs::Pose>::iterator point,geometry_ms
 
 const double PI=3.14159265359;
 const double ZERO = 0.2;
-const double interval = 1;//步长 两步之内是障碍物
+const double interval = 1;//步长
 const double TIME_OUT = 3;
 const double obstac_dis = 1.2;
 const int obstac_min = 20;
@@ -178,7 +178,7 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   else if(theta2<-PI)theta2+=2*PI;
   //std::cout<<"yaw:"<<yaw<<" theta1"<<theta1<<" theta2:"<<theta2<<std::endl;
   theta2 = theta2/PI*180.0;
-  std::cout<<" theta2:"<<theta2<<std::endl;
+  //std::cout<<" theta2:"<<theta2<<std::endl;
 
   int Pranges;//自身与目标连线正负30度 雷达数据开始的数组下表
   if(theta2<0)Pranges = -theta2;
@@ -187,13 +187,18 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   int obstac_num=0;
   std::cout<<"Ptemp:"<<Pranges<<std::endl;
   
+
+  double ob_dis = point2PointDistance(now_pose.pose,action_goal.pose);
+  if (obstac_dis < ob_dis) ob_dis = obstac_dis;
+  //std::cout<<"ob_dis:"<<ob_dis<<std::endl;
+
   for(int i=0;i<40;++i)
   {
     int Ptemp = (Pranges+i)%360;
-    if(scan->ranges[Ptemp]<obstac_dis)//当前与目标距离
+    if(scan->ranges[Ptemp] < ob_dis)//当前与目标距离
       {
         obstac_num++;
-    //    std::cout<<scan->ranges[Ptemp]<<" ";
+        //std::cout<<scan->ranges[Ptemp]<<" ";
       }
   }
   if(obstac_num>obstac_min)
@@ -201,7 +206,7 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   else
     find_obstacle=false;
   
-  std::cout<<"前方障碍物数量"<<obstac_num<<std::endl;
+  //std::cout<<"前方障碍物数量"<<obstac_num<<std::endl;
 }
 //监听机器人回复信息,报告机器人错误
 void chatterCallback( const move_base_msgs::MoveBaseActionResult::ConstPtr& result)
@@ -311,6 +316,7 @@ void postCallback( const geometry_msgs::PoseStamped::ConstPtr& posestamped )
       posts = IntervalPoint(*itera_globle_posts,*(itera_globle_posts+1));
       //posts = globle_posts; //debug
       itera_posts = posts.begin();
+      localbegin = false;
       itera_globle_posts++;
 
       std::cout<<"到达全局目标"<<itera_globle_posts-globle_posts.begin()<<"下的"
@@ -328,7 +334,13 @@ void postCallback( const geometry_msgs::PoseStamped::ConstPtr& posestamped )
     && point2PointDistance(*itera_posts,posestamped->pose)<ZERO 
     && point2PointYaw(*itera_posts,posestamped->pose)<ZERO*5) //1局部未启动 2局部目标已更新
     {
-        getMsgFromlist(itera_posts+2,action_goal);
+        std::cout<<"进入局部启动器"<<std::endl;
+        if(itera_posts+2 < posts.end())
+          getMsgFromlist(itera_posts+2,action_goal);
+        else if(itera_posts+1 < posts.end())
+          getMsgFromlist(itera_posts+1,action_goal);
+        else
+          getMsgFromlist(itera_posts,action_goal);
         ros::Duration(0.1).sleep();//查看有没有障碍物
         if(!find_obstacle)
         {
@@ -347,6 +359,7 @@ void postCallback( const geometry_msgs::PoseStamped::ConstPtr& posestamped )
       if(itera_posts+2 < posts.end())
       {
         gotoLocalTPlusI(2);
+
       }
       else if(itera_posts+2 == posts.end())
       {
