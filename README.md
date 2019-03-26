@@ -19,7 +19,7 @@
     cd ~
     mkdir -p catkin_ws/src
     cd catkin_ws/src
-    git clone
+    git clone  https://github.com/tricomm/beginner_tutorials.git
     ```
 5. 编译
     ```
