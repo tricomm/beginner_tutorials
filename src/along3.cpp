@@ -181,9 +181,9 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   //std::cout<<" theta2:"<<theta2<<std::endl;
 
   int Pranges;//自身与目标连线正负30度 雷达数据开始的数组下表
-  if(theta2<0)Pranges = 360+theta2;
-  else Pranges = theta2;
-  Pranges = Pranges - 20  + FX*90;
+  if(theta2<0)Pranges = -theta2;
+  else Pranges = 360 - theta2;
+  Pranges = Pranges - 20 + 360 + FX*90;
   int obstac_num=0;
   std::cout<<"Ptemp:"<<Pranges<<std::endl;
   
@@ -488,19 +488,28 @@ int main(int argc, char **argv)
   itera_globle_posts = globle_posts.begin();
 
   //初始位置 移动itera_globle_posts
-  //   if(n.getParam("robot_position_x",now_pose.pose.position.x)
-  //   &&n.getParam("robot_position_y",now_pose.pose.position.y))
-  // {
-  //   std::vector<geometry_msgs::Pose>::iterator itera_dir_min;//当前出发点T
-  //   itera_dir_min = globle_posts.begin();
-  // }
-  // else
-  // {
-  //   std::cout<<"初始位置读取失败"<<std::endl;
-  // }
+    if(n.getParam("robot_position_x",now_pose.pose.position.x)
+    &&n.getParam("robot_position_y",now_pose.pose.position.y))
+  {
+    std::vector<geometry_msgs::Pose>::iterator itera_dir_min;
+    double dou_dir_min = point2PointDistance(now_pose.pose,*globle_posts.begin());
+    itera_dir_min = globle_posts.begin();
+    for(auto i=globle_posts.begin();i!=globle_posts.end();++i)
+    {
+        if(point2PointDistance(now_pose.pose,*i)<dou_dir_min)
+        {
+            dou_dir_min = point2PointDistance(now_pose.pose,*i);
+            itera_dir_min = i;
+        }
+    }
+    itera_globle_posts = itera_dir_min;
+  }
+  else
+  {
+    std::cout<<"初始位置读取失败"<<std::endl;
+  }
 
 
-  //move_base_msgs::MoveBaseActionGoal action_goal;//发送信息
 
 
   // if(n.getParam("FX",FX))
