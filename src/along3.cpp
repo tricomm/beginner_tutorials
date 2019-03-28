@@ -157,7 +157,8 @@ bool readPosts(std::vector<geometry_msgs::Pose> &posts,const char file_path[100]
     temp_pose.orientation.w=cos(dgeToRad(temp_dge)/2.0);
     posts.push_back(temp_pose);
   }
-  std::cout<<"读取"<<file_path<<"成功"<<std::endl;
+  std::cout<<"读取"<<file_path<<"成功,共"
+  <<posts.size()<<"个节点"<<std::endl;
   return true;
 }
 
@@ -181,11 +182,11 @@ void scanCallback(const sensor_msgs::LaserScanConstPtr scan){
   //std::cout<<" theta2:"<<theta2<<std::endl;
 
   int Pranges;//自身与目标连线正负30度 雷达数据开始的数组下表
-  if(theta2<0)Pranges = -theta2;
-  else Pranges = 360 - theta2;
-  Pranges = Pranges - 20 + 360 + FX*90;
+  if(theta2<0)Pranges = 360+theta2;
+  else Pranges = theta2;
+  Pranges = Pranges - 20  + FX*90;
   int obstac_num=0;
-  std::cout<<"Ptemp:"<<Pranges<<std::endl;
+  //std::cout<<"Ptemp:"<<Pranges<<std::endl;
   
 
   double ob_dis = point2PointDistance(now_pose.pose,action_goal.pose);
@@ -301,23 +302,23 @@ void postCallback( const geometry_msgs::PoseStamped::ConstPtr& posestamped )
   double globle_goal_yaw = point2PointYaw(*itera_globle_posts,posestamped->pose);
 
     //全局规划
-  if( itera_globle_posts == globle_posts.end()) //当前点到了则++,加到了尾后则完成
-  {
-      std::cout<<"到达全局最终目标"<<std::endl;
-      std::cout<<"监听到当前位置x "<<posestamped->pose.position.x
-              <<"y "<<posestamped->pose.position.y<<std::endl;
-      return;
-  }
-
-  else if(globle_goal_distance < ZERO && globle_goal_yaw < ZERO*5)
+  if(globle_goal_distance < ZERO && globle_goal_yaw < ZERO*5)
   {
       globlebegin = true;
       std::cout<<"到达全局目标:"<<itera_globle_posts-globle_posts.begin()+1<<std::endl;
-      posts = IntervalPoint(*itera_globle_posts,*(itera_globle_posts+1));
+      if(itera_globle_posts+1<globle_posts.end())
+        posts = IntervalPoint(*itera_globle_posts,*(itera_globle_posts+1));
+      else
+      {
+        std::cout<<"到达全局最终目标"<<std::endl;
+        std::cout<<"监听到当前位置x "<<posestamped->pose.position.x
+              <<"y "<<posestamped->pose.position.y<<std::endl;
+        return;
+      } 
       //posts = globle_posts; //debug
       itera_posts = posts.begin();
       localbegin = false;
-      itera_globle_posts++;
+      itera_globle_posts+=1;
 
       std::cout<<"到达全局目标"<<itera_globle_posts-globle_posts.begin()<<"下的"
                         <<"局部目标:"<<itera_posts-posts.begin()+1<<std::endl;
@@ -487,29 +488,31 @@ int main(int argc, char **argv)
   itera_posts=posts.begin();
   itera_globle_posts = globle_posts.begin();
 
-  //初始位置 移动itera_globle_posts
-    if(n.getParam("robot_position_x",now_pose.pose.position.x)
-    &&n.getParam("robot_position_y",now_pose.pose.position.y))
-  {
-    std::vector<geometry_msgs::Pose>::iterator itera_dir_min;
-    double dou_dir_min = point2PointDistance(now_pose.pose,*globle_posts.begin());
-    itera_dir_min = globle_posts.begin();
-    for(auto i=globle_posts.begin();i!=globle_posts.end();++i)
-    {
-        if(point2PointDistance(now_pose.pose,*i)<dou_dir_min)
-        {
-            dou_dir_min = point2PointDistance(now_pose.pose,*i);
-            itera_dir_min = i;
-        }
-    }
-    itera_globle_posts = itera_dir_min;
-  }
-  else
-  {
-    std::cout<<"初始位置读取失败"<<std::endl;
-  }
+  // //初始位置 移动itera_globle_posts
+  //   if(n.getParam("robot_position_x",now_pose.pose.position.x)
+  //   &&n.getParam("robot_position_y",now_pose.pose.position.y))
+  // {
+  //   std::vector<geometry_msgs::Pose>::iterator itera_dir_min;
+  //   double dou_dir_min = point2PointDistance(now_pose.pose,*globle_posts.begin());
+  //   itera_dir_min = globle_posts.begin();
+  //   for(auto i=globle_posts.begin();i!=globle_posts.end();++i)
+  //   {
+  //       if(point2PointDistance(now_pose.pose,*i)<dou_dir_min)
+  //       {
+  //           dou_dir_min = point2PointDistance(now_pose.pose,*i);
+  //           itera_dir_min = i;
+  //       }
+  //   }
+  //   itera_globle_posts = itera_dir_min;
+  // }
+  // else
+  // {
+  //   std::cout<<"初始位置读取失败"<<std::endl;
+  // }
 
 
+
+  //move_base_msgs::MoveBaseActionGoal action_goal;//发送信息
 
 
   // if(n.getParam("FX",FX))

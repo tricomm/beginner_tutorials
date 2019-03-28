@@ -44,6 +44,9 @@ int main(int argc, char** argv){
     robot_pose.pose.orientation.z = transform.getRotation().z();
     count++;
     
+    node.setParam("robot_position_x",transform.getOrigin().x());
+    node.setParam("robot_position_y",transform.getOrigin().y());
+
     turtle_vel.publish(robot_pose);
 
     rate.sleep();
