@@ -210,6 +210,10 @@ add_executable(along2 src/along2.cpp)
 target_link_libraries(along2 ${catkin_LIBRARIES})
 add_dependencies(along2 beginner_tutorials_generate_messages_cpp)
 
+add_executable(along3 src/along3.cpp)
+target_link_libraries(along3 ${catkin_LIBRARIES})
+add_dependencies(along3 beginner_tutorials_generate_messages_cpp)
+
 add_executable(alongpro src/alongpro_tf_listener.cpp)
 target_link_libraries(alongpro ${catkin_LIBRARIES})
 

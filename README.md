@@ -57,10 +57,11 @@
 ## mapping
 ---
 * 见[autolabor](http://www.autolabor.com.cn/)
-## poses.txt 编写及rviz控制
+## posts.txt 编写(文件可自定义名字)及rviz控制
 ---
+* posts.txt位于工作空间如catkin_ws的根目录下
 * rviz可视化控制见[autolabor](http://www.autolabor.com.cn/)
-* poses.txt的格式为每行为一个节点,节点参数为三个数分别为x坐标,y坐标,方向
+* posts.txt的格式为每行为一个节点,节点参数为三个数分别为x坐标,y坐标,方向
 * 坐标系是一个右手系食指为x,中指为y,以食指为旋转0度逆时针为正旋转方向,方向取[-180,180]
 
     例如
@@ -82,7 +83,7 @@
     rostopic echo /move_base_simple/goal
     ```
     3. 在rviz发出想去的节点位置及方向
-    4. 若小车成功到达在`终端1`中查看位置信息并记入poses.txt
+    4. 若小车成功到达在`终端1`中查看位置信息并记入posts.txt
     5. 方向信息需要自己填写或通过`终端1`中的四元数进行推算,[转换公式](https://tricomm.github.io./2019/02/28/Quaternion/)
 ## Run
 ---
@@ -124,5 +125,6 @@
     cd
     source zsybash/autolocal.bash 
     source catkin_ws/devel/setup.bash
+    rosparam set posts_fname [posts路径文件名]
     rosrun beginner_tutorials along2
     ```
