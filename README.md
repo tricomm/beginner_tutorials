@@ -127,4 +127,5 @@
     source catkin_ws/devel/setup.bash
     rosparam set posts_fname [posts路径文件名]
     rosrun beginner_tutorials along2
+    注:along2改为along3 小车会从路线中部开始跑
     ```
